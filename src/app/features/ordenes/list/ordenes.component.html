@@ -1,0 +1,211 @@
+<div class="pagina-encabezado">
+  <div>
+    <h1>Órdenes de trabajo</h1>
+    <p class="pagina-subtitulo">Seguimiento de ingreso, diagnóstico, reparación y facturación</p>
+  </div>
+  <app-boton *appTienePermiso="['ordenes.crear', ['Administrador', 'Recepcionista']]" (click)="abrirCrear()">
+    + Nueva orden
+  </app-boton>
+</div>
+
+<div class="pagina-barra">
+  <select class="control-formulario selector-filtro" [ngModel]="estadoFiltro()" (ngModelChange)="estadoFiltro.set($event)">
+    <option [ngValue]="null">Todos los estados</option>
+    @for (opcion of estadoOpciones; track opcion.id) {
+      <option [ngValue]="opcion.id">{{ opcion.nombre }}</option>
+    }
+  </select>
+</div>
+
+@if (cargando()) {
+  <app-cargador></app-cargador>
+} @else if (filtrados().length === 0) {
+  <div class="estado-vacio">No hay órdenes de trabajo para este filtro.</div>
+} @else {
+  <div class="tabla-datos-contenedor">
+    <table class="tabla-datos">
+      <thead>
+        <tr>
+          <th>Orden</th>
+          <th>Vehículo</th>
+          <th>Cliente</th>
+          <th>Mecánico</th>
+          <th>Ingreso</th>
+          <th>Estado</th>
+          <th></th>
+        </tr>
+      </thead>
+      <tbody>
+        @for (orden of filtrados(); track orden.idOrden) {
+          <tr class="fila-clicable" (click)="verDetalle(orden)">
+            <td>#{{ orden.idOrden }}</td>
+            <td>{{ orden.vehiculo?.placa || '—' }}</td>
+            <td>{{ orden.vehiculo?.cliente?.nombre || '—' }}</td>
+            <td>{{ orden.mecanico?.nombreCompleto || '—' }}</td>
+            <td>{{ orden.fechaIngreso | date: 'short' }}</td>
+            <td><app-insignia [variante]="estadoVariant(orden.idEstadoOrden)">{{ estadoLabel(orden.idEstadoOrden) }}</app-insignia></td>
+            <td><span class="enlace-ver">Ver detalle →</span></td>
+          </tr>
+        }
+      </tbody>
+    </table>
+  </div>
+}
+
+<app-modal [abierto]="modalAbierto()" titulo="Nueva orden de trabajo" tamano="lg" (cerrado)="cerrarModal()">
+  <form [formGroup]="formulario" (ngSubmit)="guardar()">
+    <!-- Cliente: existente o nuevo -->
+    <section class="seccion-formulario">
+      <div class="seccion-encabezado">
+        <h3>Cliente</h3>
+        @if (puedeCrearCliente()) {
+          @if (modoCliente() === 'existente') {
+            <button type="button" class="enlace-accion" (click)="cambiarModoCliente('nuevo')">+ Registrar cliente nuevo</button>
+          } @else {
+            <button type="button" class="enlace-accion" (click)="cambiarModoCliente('existente')">Elegir cliente existente</button>
+          }
+        }
+      </div>
+
+      @if (modoCliente() === 'existente') {
+        <div class="campo-formulario">
+          <label for="idCliente">Cliente *</label>
+          <select id="idCliente" class="control-formulario" formControlName="idCliente">
+            <option [ngValue]="null" disabled>Selecciona un cliente</option>
+            @for (cliente of clientes(); track cliente.idCliente) {
+              <option [ngValue]="cliente.idCliente">{{ cliente.nombre }}</option>
+            }
+          </select>
+          @if (formulario.controls.idCliente.value === null && formulario.touched) {
+            <span class="error-campo">Selecciona un cliente o registra uno nuevo.</span>
+          }
+        </div>
+      } @else {
+        <div [formGroup]="formularioCliente">
+          <div class="cuadricula-formulario">
+            <div class="campo-formulario">
+              <label for="clienteNombre">Nombre *</label>
+              <input id="clienteNombre" type="text" class="control-formulario" formControlName="nombre" />
+              @if (formularioCliente.controls.nombre.touched && formularioCliente.controls.nombre.invalid) {
+                <span class="error-campo">El nombre es obligatorio.</span>
+              }
+            </div>
+            <div class="campo-formulario">
+              <label for="clienteTelefono">Teléfono</label>
+              <input id="clienteTelefono" type="text" class="control-formulario" formControlName="telefono" />
+            </div>
+          </div>
+          <div class="cuadricula-formulario">
+            <div class="campo-formulario">
+              <label for="clienteEmail">Correo electrónico</label>
+              <input id="clienteEmail" type="email" class="control-formulario" formControlName="email" />
+              @if (formularioCliente.controls.email.touched && formularioCliente.controls.email.invalid) {
+                <span class="error-campo">Ingresa un correo válido.</span>
+              }
+            </div>
+            <div class="campo-formulario">
+              <label for="clienteDireccion">Dirección</label>
+              <input id="clienteDireccion" type="text" class="control-formulario" formControlName="direccion" />
+            </div>
+          </div>
+        </div>
+      }
+    </section>
+
+    <!-- Vehículo: existente (del cliente elegido) o nuevo -->
+    <section class="seccion-formulario">
+      <div class="seccion-encabezado">
+        <h3>Vehículo</h3>
+        @if (puedeCrearVehiculo() && modoCliente() === 'existente' && idClienteSeleccionado() !== null) {
+          @if (modoVehiculo() === 'existente') {
+            <button type="button" class="enlace-accion" (click)="cambiarModoVehiculo('nuevo')">+ Registrar vehículo nuevo</button>
+          } @else if (vehiculosDelCliente().length > 0) {
+            <button type="button" class="enlace-accion" (click)="cambiarModoVehiculo('existente')">Elegir vehículo existente</button>
+          }
+        }
+      </div>
+
+      @if (modoVehiculo() === 'existente') {
+        <div class="campo-formulario">
+          <label for="idVehiculo">Vehículo *</label>
+          <select id="idVehiculo" class="control-formulario" formControlName="idVehiculo">
+            <option [ngValue]="null" disabled>
+              {{ idClienteSeleccionado() === null ? 'Primero selecciona un cliente' : 'Selecciona un vehículo' }}
+            </option>
+            @for (vehiculo of vehiculosDelCliente(); track vehiculo.idVehiculo) {
+              <option [ngValue]="vehiculo.idVehiculo">
+                {{ vehiculo.placa }} — {{ vehiculo.marca }} {{ vehiculo.modelo }}
+              </option>
+            }
+          </select>
+          @if (idClienteSeleccionado() !== null && vehiculosDelCliente().length === 0) {
+            <span class="ayuda-campo">Este cliente no tiene vehículos registrados.</span>
+          }
+        </div>
+      } @else {
+        <div [formGroup]="formularioVehiculo">
+          <div class="cuadricula-formulario">
+            <div class="campo-formulario">
+              <label for="vehiculoPlaca">Placa *</label>
+              <input id="vehiculoPlaca" type="text" class="control-formulario" formControlName="placa" />
+              @if (formularioVehiculo.controls.placa.touched && formularioVehiculo.controls.placa.invalid) {
+                <span class="error-campo">La placa es obligatoria.</span>
+              }
+            </div>
+            <div class="campo-formulario">
+              <label for="vehiculoMarca">Marca *</label>
+              <input id="vehiculoMarca" type="text" class="control-formulario" formControlName="marca" />
+              @if (formularioVehiculo.controls.marca.touched && formularioVehiculo.controls.marca.invalid) {
+                <span class="error-campo">La marca es obligatoria.</span>
+              }
+            </div>
+          </div>
+          <div class="cuadricula-formulario">
+            <div class="campo-formulario">
+              <label for="vehiculoModelo">Modelo *</label>
+              <input id="vehiculoModelo" type="text" class="control-formulario" formControlName="modelo" />
+              @if (formularioVehiculo.controls.modelo.touched && formularioVehiculo.controls.modelo.invalid) {
+                <span class="error-campo">El modelo es obligatorio.</span>
+              }
+            </div>
+            <div class="campo-formulario">
+              <label for="vehiculoAnio">Año</label>
+              <input id="vehiculoAnio" type="number" class="control-formulario" formControlName="anio" />
+            </div>
+          </div>
+          <div class="campo-formulario">
+            <label for="vehiculoColor">Color</label>
+            <input id="vehiculoColor" type="text" class="control-formulario" formControlName="color" />
+          </div>
+        </div>
+      }
+    </section>
+
+    <!-- Datos de la orden -->
+    <section class="seccion-formulario">
+      <div class="seccion-encabezado">
+        <h3>Orden</h3>
+      </div>
+
+      <div class="campo-formulario">
+        <label for="idMecanico">Mecánico asignado *</label>
+        <select id="idMecanico" class="control-formulario" formControlName="idMecanico">
+          <option [ngValue]="null" disabled>Selecciona un mecánico</option>
+          @for (mecanico of mecanicos(); track mecanico.idUsuario) {
+            <option [ngValue]="mecanico.idUsuario">{{ mecanico.nombreCompleto }}</option>
+          }
+        </select>
+      </div>
+
+      <div class="campo-formulario">
+        <label for="observaciones">Observaciones</label>
+        <textarea id="observaciones" class="control-formulario" formControlName="observaciones"></textarea>
+      </div>
+    </section>
+  </form>
+
+  <div modal-pie>
+    <app-boton variante="fantasma" (click)="cerrarModal()">Cancelar</app-boton>
+    <app-boton [cargando]="guardando()" (click)="guardar()">Crear orden</app-boton>
+  </div>
+</app-modal>

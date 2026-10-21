@@ -1,0 +1,43 @@
+<div class="pagina-encabezado">
+  <div>
+    <h1>Facturas</h1>
+    <p class="pagina-subtitulo">Historial de facturación de órdenes finalizadas</p>
+  </div>
+</div>
+
+@if (cargando()) {
+  <app-cargador></app-cargador>
+} @else if (facturas().length === 0) {
+  <div class="estado-vacio">Aún no se han generado facturas.</div>
+} @else {
+  <div class="tabla-datos-contenedor">
+    <table class="tabla-datos">
+      <thead>
+        <tr>
+          <th>Factura</th>
+          <th>Orden</th>
+          <th>Fecha de emisión</th>
+          <th>Mano de obra</th>
+          <th>Repuestos</th>
+          <th>Total</th>
+          <th>Estado</th>
+          <th></th>
+        </tr>
+      </thead>
+      <tbody>
+        @for (factura of facturas(); track factura.idFactura) {
+          <tr class="fila-clicable" (click)="verDetalle(factura)">
+            <td>#{{ factura.idFactura }}</td>
+            <td>#{{ factura.idOrden }}</td>
+            <td>{{ factura.fechaEmision | date: 'medium' }}</td>
+            <td>GTQ {{ factura.costoManoObra | number: '1.2-2' }}</td>
+            <td>GTQ {{ factura.costoRepuestos | number: '1.2-2' }}</td>
+            <td><strong>GTQ {{ factura.total | number: '1.2-2' }}</strong></td>
+            <td><app-insignia variante="primario">{{ factura.estado }}</app-insignia></td>
+            <td><span class="enlace-ver">Ver →</span></td>
+          </tr>
+        }
+      </tbody>
+    </table>
+  </div>
+}

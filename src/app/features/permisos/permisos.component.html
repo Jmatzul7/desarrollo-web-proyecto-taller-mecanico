@@ -1,0 +1,81 @@
+@if (cargando()) {
+  <app-cargador></app-cargador>
+} @else if (usuarioSeleccionado()) {
+  <div class="pagina-encabezado">
+    <div>
+      <a (click)="volver()" class="enlace-volver">← Volver a usuarios</a>
+      <h1>Permisos de {{ usuarioSeleccionado()!.nombreCompleto }}</h1>
+      <p class="pagina-subtitulo">
+        Rol: <strong>{{ usuarioSeleccionado()!.rol }}</strong> — además de lo que su rol ya permite, puedes
+        otorgarle permisos granulares individuales sin cambiar su rol.
+      </p>
+    </div>
+  </div>
+
+  @for (grupo of agrupados(); track grupo.recurso) {
+    <div class="card permiso-group">
+      <h3>{{ grupo.recurso }}</h3>
+      <div class="permiso-list">
+        @for (permiso of grupo.permisos; track permiso.idPermiso) {
+          <label class="permiso-item">
+            <input
+              type="checkbox"
+              [checked]="tienePermiso(permiso.idPermiso)"
+              [disabled]="guardando()"
+              (change)="alternar(permiso)"
+            />
+            <div>
+              <span class="permiso-name">{{ permiso.nombre }}</span>
+              @if (permiso.descripcion) {
+                <span class="permiso-desc">{{ permiso.descripcion }}</span>
+              }
+            </div>
+            @if (tienePermiso(permiso.idPermiso)) {
+              <app-insignia variante="primario">Otorgado</app-insignia>
+            }
+          </label>
+        }
+      </div>
+    </div>
+  }
+} @else {
+  <div class="pagina-encabezado">
+    <div>
+      <h1>Permisos granulares</h1>
+      <p class="pagina-subtitulo">Selecciona un usuario para ver y administrar sus permisos individuales</p>
+    </div>
+  </div>
+
+  <div class="pagina-barra">
+    <input
+      type="text"
+      class="control-formulario entrada-busqueda"
+      placeholder="Buscar usuario..."
+      [value]="busqueda()"
+      (input)="busqueda.set($any($event.target).value)"
+    />
+  </div>
+
+  <div class="tabla-datos-contenedor">
+    <table class="tabla-datos">
+      <thead>
+        <tr>
+          <th>Usuario</th>
+          <th>Nombre</th>
+          <th>Rol</th>
+          <th></th>
+        </tr>
+      </thead>
+      <tbody>
+        @for (usuario of usuariosFiltrados(); track usuario.idUsuario) {
+          <tr class="fila-clicable" (click)="seleccionar(usuario)">
+            <td>{{ usuario.nombreUsuario }}</td>
+            <td>{{ usuario.nombreCompleto }}</td>
+            <td><app-insignia variante="informacion">{{ usuario.rol }}</app-insignia></td>
+            <td><span class="enlace-ver">Administrar permisos →</span></td>
+          </tr>
+        }
+      </tbody>
+    </table>
+  </div>
+}

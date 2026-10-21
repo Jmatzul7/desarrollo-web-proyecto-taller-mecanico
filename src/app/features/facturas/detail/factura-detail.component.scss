@@ -1,0 +1,107 @@
+.enlace-volver {
+  display: inline-block;
+  font-size: 13px;
+  color: var(--color-texto-atenuado);
+  margin-bottom: 10px;
+}
+
+.cuadricula-informacion {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 18px;
+}
+
+.etiqueta-informacion {
+  display: block;
+  font-size: 12px;
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+  color: var(--color-texto-tenue);
+  margin-bottom: 4px;
+}
+
+.valor-informacion {
+  display: block;
+  font-size: 14px;
+  color: var(--color-texto);
+}
+
+.detalle-card {
+  margin-top: 20px;
+
+  h2 {
+    font-size: 16px;
+    margin-bottom: 8px;
+  }
+}
+
+.detalle-note {
+  font-size: 13px;
+  color: var(--color-texto-tenue);
+  margin-bottom: 18px;
+  line-height: 1.5;
+}
+
+.reparacion-row {
+  padding: 14px 0;
+  border-bottom: 1px solid var(--color-borde);
+}
+.reparacion-row:last-of-type {
+  border-bottom: none;
+}
+
+.reparacion-row-header {
+  display: flex;
+  justify-content: space-between;
+  font-size: 14px;
+  color: var(--color-texto);
+  font-weight: 600;
+}
+
+.repuestos-list {
+  list-style: none;
+  margin: 10px 0 0;
+  padding: 0 0 0 16px;
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+
+  li {
+    display: flex;
+    justify-content: space-between;
+    font-size: 13px;
+    color: var(--color-texto-atenuado);
+  }
+}
+
+.totales {
+  margin-top: 20px;
+  padding-top: 16px;
+  border-top: 1px solid var(--color-borde);
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  max-width: 320px;
+  margin-left: auto;
+}
+
+.total-row {
+  display: flex;
+  justify-content: space-between;
+  font-size: 14px;
+  color: var(--color-texto-atenuado);
+}
+
+.total-final {
+  font-size: 17px;
+  font-weight: 700;
+  color: var(--color-texto);
+  padding-top: 8px;
+  border-top: 1px solid var(--color-borde);
+}
+
+@media (max-width: 760px) {
+  .cuadricula-informacion {
+    grid-template-columns: 1fr;
+  }
+}

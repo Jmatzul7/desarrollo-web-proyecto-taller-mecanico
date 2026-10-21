@@ -1,0 +1,120 @@
+<div class="pagina-encabezado">
+  <div>
+    <h1>Clientes</h1>
+    <p class="pagina-subtitulo">Administra los clientes registrados en el taller</p>
+  </div>
+  <app-boton *appTienePermiso="['clientes.crear', ['Administrador', 'Recepcionista']]" (click)="abrirCrear()">
+    + Nuevo cliente
+  </app-boton>
+</div>
+
+<div class="pagina-barra">
+  <input
+    type="text"
+    class="control-formulario entrada-busqueda"
+    placeholder="Buscar por nombre, email o teléfono..."
+    [value]="busqueda()"
+    (input)="busqueda.set($any($event.target).value)"
+  />
+</div>
+
+@if (cargando()) {
+  <app-cargador></app-cargador>
+} @else if (filtrados().length === 0) {
+  <div class="estado-vacio">No se encontraron clientes.</div>
+} @else {
+  <div class="tabla-datos-contenedor">
+    <table class="tabla-datos">
+      <thead>
+        <tr>
+          <th>Nombre</th>
+          <th>Teléfono</th>
+          <th>Correo</th>
+          <th>Dirección</th>
+          <th>Estado</th>
+          <th></th>
+        </tr>
+      </thead>
+      <tbody>
+        @for (cliente of filtrados(); track cliente.idCliente) {
+          <tr>
+            <td>{{ cliente.nombre }}</td>
+            <td>{{ cliente.telefono || '—' }}</td>
+            <td>{{ cliente.email || '—' }}</td>
+            <td>{{ cliente.direccion || '—' }}</td>
+            <td>
+              <app-insignia [variante]="cliente.activo ? 'exito' : 'neutro'">
+                {{ cliente.activo ? 'Activo' : 'Inactivo' }}
+              </app-insignia>
+            </td>
+            <td>
+              <div class="acciones-fila">
+                <button
+                  class="btn-icono"
+                  *appTienePermiso="['clientes.editar', ['Administrador', 'Recepcionista']]"
+                  (click)="abrirEditar(cliente)"
+                  title="Editar"
+                >
+                  ✎
+                </button>
+                @if (cliente.activo) {
+                  <button
+                    class="btn-icono peligro"
+                    *appTienePermiso="['clientes.eliminar', ['Administrador']]"
+                    (click)="eliminar(cliente)"
+                    title="Desactivar"
+                  >
+                    ✕
+                  </button>
+                }
+              </div>
+            </td>
+          </tr>
+        }
+      </tbody>
+    </table>
+  </div>
+}
+
+<app-modal
+  [abierto]="modalAbierto()"
+  [titulo]="editando() ? 'Editar cliente' : 'Nuevo cliente'"
+  (cerrado)="cerrarModal()"
+>
+  <form [formGroup]="formulario" (ngSubmit)="guardar()">
+    <div class="campo-formulario">
+      <label for="nombre">Nombre *</label>
+      <input id="nombre" type="text" class="control-formulario" formControlName="nombre" />
+    </div>
+
+    <div class="cuadricula-formulario">
+      <div class="campo-formulario">
+        <label for="telefono">Teléfono</label>
+        <input id="telefono" type="text" class="control-formulario" formControlName="telefono" />
+      </div>
+      <div class="campo-formulario">
+        <label for="email">Correo electrónico</label>
+        <input id="email" type="email" class="control-formulario" formControlName="email" />
+      </div>
+    </div>
+
+    <div class="campo-formulario">
+      <label for="direccion">Dirección</label>
+      <textarea id="direccion" class="control-formulario" formControlName="direccion"></textarea>
+    </div>
+
+    @if (editando()) {
+      <div class="campo-formulario campo-casilla">
+        <label>
+          <input type="checkbox" formControlName="activo" />
+          Cliente activo
+        </label>
+      </div>
+    }
+  </form>
+
+  <div modal-pie>
+    <app-boton variante="fantasma" (click)="cerrarModal()">Cancelar</app-boton>
+    <app-boton [cargando]="guardando()" (click)="guardar()">Guardar</app-boton>
+  </div>
+</app-modal>

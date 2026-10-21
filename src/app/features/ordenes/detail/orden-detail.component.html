@@ -1,0 +1,261 @@
+@if (cargando()) {
+  <app-cargador></app-cargador>
+} @else if (orden()) {
+  <div class="pagina-encabezado">
+    <div>
+      <a routerLink="/ordenes" class="enlace-volver">← Volver a órdenes</a>
+      <h1>Orden #{{ orden()!.idOrden }}</h1>
+      <p class="pagina-subtitulo">
+        {{ orden()!.vehiculo?.marca }} {{ orden()!.vehiculo?.modelo }} — {{ orden()!.vehiculo?.placa }}
+        · {{ orden()!.vehiculo?.cliente?.nombre }}
+      </p>
+    </div>
+
+    <div class="acciones-encabezado">
+      <app-insignia [variante]="'primario'">{{ estadoOrdenLabel(orden()!.idEstadoOrden) }}</app-insignia>
+
+      <select
+        *appTienePermiso="['ordenes.cambiar_estado', ['Administrador', 'Recepcionista', 'Mecanico']]"
+        class="control-formulario estado-selector"
+        [ngModel]="orden()!.idEstadoOrden"
+        (ngModelChange)="cambiarEstadoOrden($event)"
+        [disabled]="esOrdenFacturada()"
+      >
+        @for (opcion of estadoOrdenOpciones; track opcion.id) {
+            <option [ngValue]="opcion.id">{{ opcion.nombre }}</option>
+        }
+      </select>
+
+      @if (orden()!.idEstadoOrden === ESTADO_ORDEN.FINALIZADA) {
+        <app-boton *appTienePermiso="['facturas.generar', ['Administrador', 'Recepcionista']]" (click)="generarFactura()">
+          Generar factura
+        </app-boton>
+      }
+    </div>
+  </div>
+
+  <div class="card tarjeta-informacion">
+    <div class="cuadricula-informacion">
+      <div>
+        <span class="etiqueta-informacion">Mecánico asignado</span>
+        <span class="valor-informacion">{{ orden()!.mecanico?.nombreCompleto || '—' }}</span>
+      </div>
+      <div>
+        <span class="etiqueta-informacion">Fecha de ingreso</span>
+        <span class="valor-informacion">{{ orden()!.fechaIngreso | date: 'medium' }}</span>
+      </div>
+      <div>
+        <span class="etiqueta-informacion">Fecha de salida</span>
+        <span class="valor-informacion">{{ orden()!.fechaSalida ? (orden()!.fechaSalida | date: 'medium') : '—' }}</span>
+      </div>
+      <div class="informacion-ancha">
+        <span class="etiqueta-informacion">Observaciones</span>
+        <span class="valor-informacion">{{ orden()!.observaciones || 'Sin observaciones' }}</span>
+      </div>
+    </div>
+  </div>
+
+  <div class="encabezado-seccion" >
+    <h2>Diagnósticos</h2>
+    <app-boton
+      tamano="sm"
+      variante="sutil"
+      *appTienePermiso="['diagnosticos.crear', ['Administrador', 'Mecanico']]"
+      (click)="abrirModalDiagnostico()"
+      [disabled]="esOrdenFacturada()"
+    >
+      + Agregar diagnóstico
+    </app-boton>
+  </div>
+
+  @if (diagnosticos().length === 0) {
+    <div class="estado-vacio">Aún no se ha registrado ningún diagnóstico para esta orden.</div>
+  }
+
+  @for (diagnostico of diagnosticos(); track diagnostico.idDiagnostico) {
+    <div class="card diagnostico-card">
+      <div class="diagnostico-header">
+        <div>
+          <h3>Diagnóstico #{{ diagnostico.idDiagnostico }}</h3>
+          <p class="diagnostico-meta">
+            {{ diagnostico.mecanico?.nombreCompleto || '—' }} · {{ diagnostico.fechaDiagnostico | date: 'short' }}
+          </p>
+        </div>
+        <app-boton
+          tamano="sm"
+          variante="sutil"
+          *appTienePermiso="['reparaciones.crear', ['Administrador', 'Mecanico']]"
+          (click)="abrirModalReparacion(diagnostico)"
+          [disabled]="esOrdenFacturada()"
+        >
+          + Reparación
+        </app-boton>
+      </div>
+
+      <p class="diagnostico-falla">{{ diagnostico.descripcionFalla }}</p>
+
+      @if (reparacionesDe(diagnostico).length === 0) {
+        <div class="estado-vacio small">Sin reparaciones registradas.</div>
+      } @else {
+        <div class="reparaciones-list">
+          @for (item of reparacionesDe(diagnostico); track item.reparacion.idReparacion) {
+            @let reparacion = item.reparacion;
+            <div class="reparacion-item">
+              <div class="reparacion-main">
+                <div>
+                  <strong>#{{ reparacion.orden }} — {{ reparacion.descripcion }}</strong>
+                  <div class="reparacion-sub">
+                    @if (reparacion.costoManoObra) {
+                      <span>Mano de obra: GTQ {{ reparacion.costoManoObra | number: '1.2-2' }}</span>
+                    }
+                    @if (reparacion.idReparacionPrevia) {
+                      <span>Depende de #{{ reparacion.idReparacionPrevia }}</span>
+                    }
+                  </div>
+                </div>
+                <app-insignia [variante]="estadoReparacionVariant(reparacion.idEstadoReparacion)">
+                  {{ estadoReparacionLabel(reparacion.idEstadoReparacion) }}
+                </app-insignia>
+              </div>
+
+              <div class="reparacion-actions">
+                @if (reparacion.idEstadoReparacion === ESTADO_REPARACION.PENDIENTE) {
+                  <app-boton
+                    tamano="sm"
+                    *appTienePermiso="['reparaciones.autorizar', ['Administrador', 'Recepcionista']]"
+                    (click)="autorizar(reparacion, true)"
+                  >
+                    Autorizar
+                  </app-boton>
+                  <app-boton
+                    tamano="sm"
+                    variante="peligro"
+                    *appTienePermiso="['reparaciones.autorizar', ['Administrador', 'Recepcionista']]"
+                    (click)="autorizar(reparacion, false)"
+                  >
+                    Rechazar
+                  </app-boton>
+                }
+
+                @if (reparacion.idEstadoReparacion === ESTADO_REPARACION.AUTORIZADA) {
+                  <app-boton tamano="sm" variante="sutil" (click)="cambiarEstadoReparacion(reparacion, ESTADO_REPARACION.EN_PROCESO)">
+                    Iniciar
+                  </app-boton>
+                }
+                @if (reparacion.idEstadoReparacion === ESTADO_REPARACION.EN_PROCESO) {
+                  <app-boton tamano="sm" variante="sutil" (click)="cambiarEstadoReparacion(reparacion, ESTADO_REPARACION.FINALIZADA)">
+                    Finalizar
+                  </app-boton>
+                }
+
+                <app-boton
+                  tamano="sm"
+                  variante="fantasma"
+                  *appTienePermiso="['reparaciones.asignar_repuesto', ['Administrador', 'Mecanico', 'Bodeguero']]"
+                  (click)="abrirModalRepuesto(reparacion)"
+                >
+                  + Repuesto
+                </app-boton>
+              </div>
+
+              @if (item.repuestos.length > 0) {
+                <div class="repuestos-usados">
+                  @for (ru of item.repuestos; track ru.idReparacionRepuesto) {
+                    <div class="repuesto-etiqueta">
+                      <span>{{ ru.repuesto?.nombre || ('Repuesto #' + ru.idRepuesto) }} × {{ ru.cantidad }}</span>
+                      <span class="repuesto-precio">GTQ {{ (ru.cantidad * ru.precioUnitario) | number: '1.2-2' }}</span>
+                      <button
+                        class="chip-quitar"
+                        *appTienePermiso="['reparaciones.quitar_repuesto', ['Administrador', 'Bodeguero']]"
+                        (click)="quitarRepuesto(reparacion, ru.idReparacionRepuesto)"
+                        title="Quitar repuesto"
+                      >
+                        ✕
+                      </button>
+                    </div>
+                  }
+                </div>
+              }
+            </div>
+          }
+        </div>
+      }
+    </div>
+  }
+}
+
+<!-- Modal: nuevo diagnóstico -->
+<app-modal [abierto]="modalDiagnosticoAbierto()" titulo="Nuevo diagnóstico" (cerrado)="modalDiagnosticoAbierto.set(false)">
+  <form [formGroup]="formularioDiagnostico" (ngSubmit)="guardarDiagnostico()">
+    <div class="campo-formulario">
+      <label for="descripcionFalla">Descripción de la falla *</label>
+      <textarea id="descripcionFalla" class="control-formulario" formControlName="descripcionFalla"></textarea>
+    </div>
+    <div class="campo-formulario">
+      <label for="idMecanico">Mecánico *</label>
+      <select id="idMecanico" class="control-formulario" formControlName="idMecanico">
+        <option [ngValue]="null" disabled>Selecciona un mecánico</option>
+        @for (mecanico of mecanicos(); track mecanico.idUsuario) {
+          <option [ngValue]="mecanico.idUsuario">{{ mecanico.nombreCompleto }}</option>
+        }
+      </select>
+    </div>
+  </form>
+  <div modal-pie>
+    <app-boton variante="fantasma" (click)="modalDiagnosticoAbierto.set(false)">Cancelar</app-boton>
+    <app-boton [cargando]="guardando()" (click)="guardarDiagnostico()">Guardar</app-boton>
+  </div>
+</app-modal>
+
+<!-- Modal: nueva reparación -->
+<app-modal [abierto]="modalReparacionAbierto()" titulo="Nueva reparación" (cerrado)="modalReparacionAbierto.set(false)">
+  <form [formGroup]="formularioReparacion" (ngSubmit)="guardarReparacion()">
+    <div class="campo-formulario">
+      <label for="descripcion">Descripción *</label>
+      <textarea id="descripcion" class="control-formulario" formControlName="descripcion"></textarea>
+    </div>
+    <div class="cuadricula-formulario">
+      <div class="campo-formulario">
+        <label for="ordenPos">Posición en secuencia *</label>
+        <input id="ordenPos" type="number" class="control-formulario" formControlName="orden" min="1" />
+      </div>
+      <div class="campo-formulario">
+        <label for="costoManoObra">Costo mano de obra</label>
+        <input id="costoManoObra" type="number" class="control-formulario" formControlName="costoManoObra" step="0.01" />
+      </div>
+    </div>
+  </form>
+  <div modal-pie>
+    <app-boton variante="fantasma" (click)="modalReparacionAbierto.set(false)">Cancelar</app-boton>
+    <app-boton [cargando]="guardando()" (click)="guardarReparacion()">Guardar</app-boton>
+  </div>
+</app-modal>
+
+<!-- Modal: agregar repuesto -->
+<app-modal [abierto]="modalRepuestoAbierto()" titulo="Agregar repuesto a la reparación" (cerrado)="modalRepuestoAbierto.set(false)">
+  <form [formGroup]="formularioRepuesto" (ngSubmit)="guardarRepuesto()">
+    <div class="campo-formulario">
+      <label for="idRepuesto">Repuesto *</label>
+      <select id="idRepuesto" class="control-formulario" formControlName="idRepuesto">
+        <option [ngValue]="null" disabled>Selecciona un repuesto</option>
+        @for (repuesto of repuestos(); track repuesto.idRepuesto) {
+          <option [ngValue]="repuesto.idRepuesto">
+            {{ repuesto.nombre }} (stock: {{ repuesto.existencia }}) — GTQ {{ repuesto.precioUnitario }}
+          </option>
+        }
+      </select>
+    </div>
+    <div class="campo-formulario">
+      <label for="cantidad">Cantidad *</label>
+      <input id="cantidad" type="number" class="control-formulario" formControlName="cantidad" min="1" />
+    </div>
+    <div class="campo-formulario">
+      <label for="justificacion">Justificación *</label>
+      <textarea id="justificacion" class="control-formulario" formControlName="justificacion"></textarea>
+    </div>
+  </form>
+  <div modal-pie>
+    <app-boton variante="fantasma" (click)="modalRepuestoAbierto.set(false)">Cancelar</app-boton>
+    <app-boton [cargando]="guardando()" (click)="guardarRepuesto()">Agregar</app-boton>
+  </div>
+</app-modal>

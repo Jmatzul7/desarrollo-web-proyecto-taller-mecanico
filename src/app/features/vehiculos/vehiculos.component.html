@@ -1,0 +1,137 @@
+<div class="pagina-encabezado">
+  <div>
+    <h1>Vehículos</h1>
+    <p class="pagina-subtitulo">Vehículos registrados por cada cliente</p>
+  </div>
+  <app-boton *appTienePermiso="['vehiculos.crear', ['Administrador', 'Recepcionista']]" (click)="abrirCrear()">
+    + Nuevo vehículo
+  </app-boton>
+</div>
+
+<div class="pagina-barra">
+  <input
+    type="text"
+    class="control-formulario entrada-busqueda"
+    placeholder="Buscar por placa, marca, modelo o cliente..."
+    [value]="busqueda()"
+    (input)="busqueda.set($any($event.target).value)"
+  />
+</div>
+
+@if (cargando()) {
+  <app-cargador></app-cargador>
+} @else if (filtrados().length === 0) {
+  <div class="estado-vacio">No se encontraron vehículos.</div>
+} @else {
+  <div class="tabla-datos-contenedor">
+    <table class="tabla-datos">
+      <thead>
+        <tr>
+          <th>Placa</th>
+          <th>Marca / Modelo</th>
+          <th>Año</th>
+          <th>Cliente</th>
+          <th>Estado</th>
+          <th></th>
+        </tr>
+      </thead>
+      <tbody>
+        @for (vehiculo of filtrados(); track vehiculo.idVehiculo) {
+          <tr>
+            <td><strong>{{ vehiculo.placa }}</strong></td>
+            <td>{{ vehiculo.marca }} {{ vehiculo.modelo }}</td>
+            <td>{{ vehiculo.anio || '—' }}</td>
+            <td>{{ vehiculo.cliente?.nombre || '—' }}</td>
+            <td>
+              <app-insignia [variante]="vehiculo.activo ? 'exito' : 'neutro'">
+                {{ vehiculo.activo ? 'Activo' : 'Inactivo' }}
+              </app-insignia>
+            </td>
+            <td>
+              <div class="acciones-fila">
+                <button
+                  class="btn-icono"
+                  *appTienePermiso="['vehiculos.editar', ['Administrador', 'Recepcionista']]"
+                  (click)="abrirEditar(vehiculo)"
+                  title="Editar"
+                >
+                  ✎
+                </button>
+                @if (vehiculo.activo) {
+                  <button
+                    class="btn-icono peligro"
+                    *appTienePermiso="['vehiculos.eliminar', ['Administrador']]"
+                    (click)="eliminar(vehiculo)"
+                    title="Desactivar"
+                  >
+                    ✕
+                  </button>
+                }
+              </div>
+            </td>
+          </tr>
+        }
+      </tbody>
+    </table>
+  </div>
+}
+
+<app-modal
+  [abierto]="modalAbierto()"
+  [titulo]="editando() ? 'Editar vehículo' : 'Nuevo vehículo'"
+  (cerrado)="cerrarModal()"
+>
+  <form [formGroup]="formulario" (ngSubmit)="guardar()">
+    <div class="cuadricula-formulario">
+      <div class="campo-formulario">
+        <label for="placa">Placa *</label>
+        <input id="placa" type="text" class="control-formulario" formControlName="placa" />
+      </div>
+      <div class="campo-formulario">
+        <label for="idCliente">Cliente *</label>
+        <select id="idCliente" class="control-formulario" formControlName="idCliente">
+          <option [ngValue]="null" disabled>Selecciona un cliente</option>
+          @for (cliente of clientes(); track cliente.idCliente) {
+            <option [ngValue]="cliente.idCliente">{{ cliente.nombre }}</option>
+          }
+        </select>
+      </div>
+    </div>
+
+    <div class="cuadricula-formulario">
+      <div class="campo-formulario">
+        <label for="marca">Marca *</label>
+        <input id="marca" type="text" class="control-formulario" formControlName="marca" />
+      </div>
+      <div class="campo-formulario">
+        <label for="modelo">Modelo *</label>
+        <input id="modelo" type="text" class="control-formulario" formControlName="modelo" />
+      </div>
+    </div>
+
+    <div class="cuadricula-formulario">
+      <div class="campo-formulario">
+        <label for="anio">Año</label>
+        <input id="anio" type="number" class="control-formulario" formControlName="anio" />
+      </div>
+      <div class="campo-formulario">
+        <label for="color">Color</label>
+        <input id="color" type="text" class="control-formulario" formControlName="color" />
+      </div>
+    </div>
+
+    @if (editando()) {
+      <div class="campo-formulario campo-casilla">
+        <label>
+          <input type="checkbox" formControlName="activo" />
+          Vehículo activo
+        </label>
+      </div>
+    }
+  </form>
+
+  <div modal-pie>
+    <app-boton variante="fantasma" (click)="cerrarModal()">Cancelar</app-boton>
+    <app-boton [cargando]="guardando()" (click)="guardar()">Guardar</app-boton>
+  </div>
+</app-modal>

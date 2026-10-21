@@ -1,0 +1,85 @@
+@if (cargando()) {
+  <app-cargador></app-cargador>
+} @else if (factura()) {
+  @let orden = factura()!.orden;
+  @let vehiculo = orden?.vehiculo;
+
+  <div class="pagina-encabezado">
+    <div>
+      <a routerLink="/facturas" class="enlace-volver">← Volver a facturas</a>
+      <h1>Factura #{{ factura()!.idFactura }}</h1>
+      <p class="pagina-subtitulo">{{ factura()!.fechaEmision | date: 'full' }}</p>
+    </div>
+    @if (puedeDescargarPdf()) {
+      <app-boton [cargando]="descargando()" (click)="descargarPdf()">Descargar PDF</app-boton>
+    }
+  </div>
+
+  <div class="card">
+    <div class="cuadricula-informacion">
+      <div>
+        <span class="etiqueta-informacion">Cliente</span>
+        <span class="valor-informacion">{{ vehiculo?.cliente?.nombre || '—' }}</span>
+      </div>
+      <div>
+        <span class="etiqueta-informacion">Vehículo</span>
+        <span class="valor-informacion">
+          @if (vehiculo) {
+            {{ vehiculo.marca }} {{ vehiculo.modelo }}
+            @if (vehiculo.anio) { ({{ vehiculo.anio }}) }
+            — {{ vehiculo.placa }}
+          } @else {
+            —
+          }
+        </span>
+      </div>
+      <div>
+        <span class="etiqueta-informacion">Mecánico</span>
+        <span class="valor-informacion">{{ orden?.mecanico?.nombreCompleto || '—' }}</span>
+      </div>
+      <div>
+        <span class="etiqueta-informacion">Orden de trabajo</span>
+        <span class="valor-informacion">
+          #{{ factura()!.idOrden }}
+          @if (orden?.fechaIngreso) { — {{ orden!.fechaIngreso | date: 'short' }} }
+        </span>
+      </div>
+      @if (vehiculo?.cliente?.telefono || vehiculo?.cliente?.email) {
+        <div>
+          <span class="etiqueta-informacion">Contacto</span>
+          <span class="valor-informacion">
+            {{ vehiculo?.cliente?.telefono || '—' }}
+            @if (vehiculo?.cliente?.email) { · {{ vehiculo?.cliente?.email }} }
+          </span>
+        </div>
+      }
+      <div>
+        <span class="etiqueta-informacion">Estado</span>
+        <span class="valor-informacion">{{ factura()!.estado }}</span>
+      </div>
+    </div>
+  </div>
+
+  <div class="card detalle-card">
+    <h2>Totales</h2>
+    <p class="detalle-note">
+      El desglose por reparación y repuesto solo está disponible en el PDF de la factura
+      (el backend no lo expone como datos aparte).
+    </p>
+
+    <div class="totales">
+      <div class="total-row">
+        <span>Mano de obra</span>
+        <span>GTQ {{ factura()!.costoManoObra | number: '1.2-2' }}</span>
+      </div>
+      <div class="total-row">
+        <span>Repuestos</span>
+        <span>GTQ {{ factura()!.costoRepuestos | number: '1.2-2' }}</span>
+      </div>
+      <div class="total-row total-final">
+        <span>Total</span>
+        <span>GTQ {{ factura()!.total | number: '1.2-2' }}</span>
+      </div>
+    </div>
+  </div>
+}

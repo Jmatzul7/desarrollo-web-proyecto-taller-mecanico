@@ -1,0 +1,26 @@
+@use '../login/login.component.scss';
+
+.registro-tarjeta .inicio-sesion-izquierda {
+  overflow-y: auto;
+}
+
+.rol-selector {
+  background: var(--color-fondo-profundo);
+  border: none;
+  border-bottom: 1.5px solid var(--color-borde);
+  padding: 8px 2px;
+  font-size: 15px;
+  color: var(--color-texto);
+  border-radius: 0;
+}
+.rol-selector:focus {
+  outline: none;
+  border-bottom-color: var(--color-primario);
+}
+
+.volver-inicio-sesion {
+  display: inline-block;
+  margin-top: 8px;
+  font-weight: 600;
+  color: var(--color-primario-claro);
+}

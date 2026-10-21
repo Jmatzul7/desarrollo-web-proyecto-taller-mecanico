@@ -1,0 +1,150 @@
+<div class="pagina-encabezado">
+  <div>
+    <h1>Repuestos / Bodega</h1>
+    <p class="pagina-subtitulo">Control de existencias y precios de repuestos</p>
+  </div>
+  <app-boton *appTienePermiso="['repuestos.crear', ['Administrador', 'Bodeguero']]" (click)="abrirCrear()">
+    + Nuevo repuesto
+  </app-boton>
+</div>
+
+<div class="pagina-barra">
+  <input
+    type="text"
+    class="control-formulario entrada-busqueda"
+    placeholder="Buscar por código o nombre..."
+    [value]="busqueda()"
+    (input)="busqueda.set($any($event.target).value)"
+  />
+</div>
+
+@if (cargando()) {
+  <app-cargador></app-cargador>
+} @else if (filtrados().length === 0) {
+  <div class="estado-vacio">No se encontraron repuestos.</div>
+} @else {
+  <div class="tabla-datos-contenedor">
+    <table class="tabla-datos">
+      <thead>
+        <tr>
+          <th>Código</th>
+          <th>Nombre</th>
+          <th>Existencia</th>
+          <th>Precio</th>
+          <th>Estado</th>
+          <th></th>
+        </tr>
+      </thead>
+      <tbody>
+        @for (repuesto of filtrados(); track repuesto.idRepuesto) {
+          <tr>
+            <td>{{ repuesto.codigo }}</td>
+            <td>{{ repuesto.nombre }}</td>
+            <td>
+              <app-insignia [variante]="repuesto.existencia <= 5 ? 'advertencia' : 'neutro'">
+                {{ repuesto.existencia }}
+              </app-insignia>
+            </td>
+            <td>GTQ {{ repuesto.precioUnitario | number: '1.2-2' }}</td>
+            <td>
+              <app-insignia [variante]="repuesto.activo ? 'exito' : 'neutro'">
+                {{ repuesto.activo ? 'Activo' : 'Inactivo' }}
+              </app-insignia>
+            </td>
+            <td>
+              <div class="acciones-fila">
+                <button
+                  class="btn-icono"
+                  *appTienePermiso="['repuestos.entrada_stock', ['Administrador', 'Bodeguero']]"
+                  (click)="abrirModalStock(repuesto)"
+                  title="Entrada de stock"
+                >
+                  +
+                </button>
+                <button
+                  class="btn-icono"
+                  *appTienePermiso="['repuestos.editar', ['Administrador', 'Bodeguero']]"
+                  (click)="abrirEditar(repuesto)"
+                  title="Editar"
+                >
+                  ✎
+                </button>
+                @if (repuesto.activo) {
+                  <button
+                    class="btn-icono peligro"
+                    *appTienePermiso="['repuestos.eliminar', ['Administrador']]"
+                    (click)="eliminar(repuesto)"
+                    title="Desactivar"
+                  >
+                    ✕
+                  </button>
+                }
+              </div>
+            </td>
+          </tr>
+        }
+      </tbody>
+    </table>
+  </div>
+}
+
+<app-modal [abierto]="modalAbierto()" [titulo]="editando() ? 'Editar repuesto' : 'Nuevo repuesto'" (cerrado)="cerrarModal()">
+  <form [formGroup]="formulario" (ngSubmit)="guardar()">
+    <div class="cuadricula-formulario">
+      <div class="campo-formulario">
+        <label for="codigo">Código *</label>
+        <input id="codigo" type="text" class="control-formulario" formControlName="codigo" />
+      </div>
+      <div class="campo-formulario">
+        <label for="existencia">Existencia inicial</label>
+        <input id="existencia" type="number" class="control-formulario" formControlName="existencia" />
+        @if (editando()) {
+          <span class="hint">Usa "Entrada de stock" para modificar la existencia.</span>
+        }
+      </div>
+    </div>
+
+    <div class="campo-formulario">
+      <label for="nombre">Nombre *</label>
+      <input id="nombre" type="text" class="control-formulario" formControlName="nombre" />
+    </div>
+
+    <div class="campo-formulario">
+      <label for="descripcion">Descripción</label>
+      <textarea id="descripcion" class="control-formulario" formControlName="descripcion"></textarea>
+    </div>
+
+    <div class="campo-formulario">
+      <label for="precioUnitario">Precio unitario *</label>
+      <input id="precioUnitario" type="number" step="0.01" class="control-formulario" formControlName="precioUnitario" />
+    </div>
+
+    @if (editando()) {
+      <div class="campo-formulario campo-casilla">
+        <label>
+          <input type="checkbox" formControlName="activo" />
+          Repuesto activo
+        </label>
+      </div>
+    }
+  </form>
+
+  <div modal-pie>
+    <app-boton variante="fantasma" (click)="cerrarModal()">Cancelar</app-boton>
+    <app-boton [cargando]="guardando()" (click)="guardar()">Guardar</app-boton>
+  </div>
+</app-modal>
+
+<app-modal [abierto]="modalStockAbierto()" titulo="Entrada de stock" (cerrado)="cerrarModalStock()" tamano="sm">
+  <form [formGroup]="formularioStock" (ngSubmit)="guardarStock()">
+    <p class="repuesto-stock">{{ repuestoStock()?.nombre }} — existencia actual: {{ repuestoStock()?.existencia }}</p>
+    <div class="campo-formulario">
+      <label for="cantidad">Cantidad a ingresar *</label>
+      <input id="cantidad" type="number" min="1" class="control-formulario" formControlName="cantidad" />
+    </div>
+  </form>
+  <div modal-pie>
+    <app-boton variante="fantasma" (click)="cerrarModalStock()">Cancelar</app-boton>
+    <app-boton [cargando]="guardando()" (click)="guardarStock()">Registrar entrada</app-boton>
+  </div>
+</app-modal>

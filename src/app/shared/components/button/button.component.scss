@@ -1,0 +1,69 @@
+.app-btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  border: none;
+  border-radius: var(--radio-pill);
+  font-weight: 600;
+  cursor: pointer;
+  white-space: nowrap;
+  transition: transform 0.15s, box-shadow 0.15s, opacity 0.15s;
+}
+
+.app-btn:disabled {
+  opacity: 0.6;
+  cursor: not-allowed;
+}
+
+.app-btn-md { padding: 10px 22px; font-size: 14px; }
+.app-btn-sm { padding: 7px 16px; font-size: 13px; }
+
+.app-btn-primario {
+  background: var(--gradiente-primario);
+  color: white;
+}
+.app-btn-primario:not(:disabled):hover {
+  transform: translateY(-1px);
+  box-shadow: 0 8px 20px -6px rgba(139, 92, 246, 0.55);
+}
+
+.app-btn-peligro {
+  background: linear-gradient(135deg, #ef4444, #dc2626);
+  color: white;
+}
+.app-btn-peligro:not(:disabled):hover {
+  transform: translateY(-1px);
+  box-shadow: 0 8px 20px -6px rgba(239, 68, 68, 0.55);
+}
+
+.app-btn-fantasma {
+  background: transparent;
+  border: 1px solid var(--color-borde);
+  color: var(--color-texto-atenuado);
+}
+.app-btn-fantasma:not(:disabled):hover {
+  border-color: var(--color-primario-claro);
+  color: var(--color-texto);
+}
+
+.app-btn-sutil {
+  background: var(--color-superficie-alt);
+  color: var(--color-texto);
+}
+.app-btn-sutil:not(:disabled):hover {
+  background: var(--color-superficie-claro);
+}
+
+.app-btn-cargador {
+  width: 14px;
+  height: 14px;
+  border: 2px solid rgba(255, 255, 255, 0.4);
+  border-top-color: white;
+  border-radius: 50%;
+  animation: spin 0.6s linear infinite;
+}
+
+@keyframes spin {
+  to { transform: rotate(360deg); }
+}

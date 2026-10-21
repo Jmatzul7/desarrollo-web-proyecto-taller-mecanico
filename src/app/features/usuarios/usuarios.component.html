@@ -1,0 +1,136 @@
+<div class="pagina-encabezado">
+  <div>
+    <h1>Usuarios</h1>
+    <p class="pagina-subtitulo">Gestión de cuentas, roles y activación</p>
+  </div>
+  <app-boton (click)="abrirCrear()">+ Nuevo usuario</app-boton>
+</div>
+
+@if (pendientes().length > 0) {
+  <div class="banner-pendientes">
+    ⚠ Hay {{ pendientes().length }} cuenta(s) pendiente(s) de activación (autoregistro).
+  </div>
+}
+
+<div class="pagina-barra">
+  <input
+    type="text"
+    class="control-formulario entrada-busqueda"
+    placeholder="Buscar por usuario, nombre o email..."
+    [value]="busqueda()"
+    (input)="busqueda.set($any($event.target).value)"
+  />
+</div>
+
+@if (cargando()) {
+  <app-cargador></app-cargador>
+} @else if (filtrados().length === 0) {
+  <div class="estado-vacio">No se encontraron usuarios.</div>
+} @else {
+  <div class="tabla-datos-contenedor">
+    <table class="tabla-datos">
+      <thead>
+        <tr>
+          <th>Usuario</th>
+          <th>Nombre</th>
+          <th>Correo</th>
+          <th>Rol</th>
+          <th>Estado</th>
+          <th></th>
+        </tr>
+      </thead>
+      <tbody>
+        @for (usuario of filtrados(); track usuario.idUsuario) {
+          <tr>
+            <td>{{ usuario.nombreUsuario }}</td>
+            <td>{{ usuario.nombreCompleto }}</td>
+            <td>{{ usuario.email || '—' }}</td>
+            <td>{{ usuario.rol || '—' }}</td>
+            <td>
+              <app-insignia [variante]="usuario.activo ? 'exito' : 'advertencia'">
+                {{ usuario.activo ? 'Activo' : 'Pendiente / Inactivo' }}
+              </app-insignia>
+            </td>
+            <td>
+              <div class="acciones-fila">
+                <a class="btn-icono" [routerLink]="['/permisos', usuario.idUsuario]" title="Permisos granulares">✦</a>
+                <button class="btn-icono" (click)="abrirEditar(usuario)" title="Editar">✎</button>
+                @if (!usuario.activo) {
+                  <button class="btn-icono" (click)="activar(usuario)" title="Activar">✓</button>
+                } @else {
+                  <button class="btn-icono peligro" (click)="desactivar(usuario)" title="Desactivar">✕</button>
+                }
+              </div>
+            </td>
+          </tr>
+        }
+      </tbody>
+    </table>
+  </div>
+}
+
+<app-modal [abierto]="modalAbierto()" [titulo]="editando() ? 'Editar usuario' : 'Nuevo usuario'" (cerrado)="cerrarModal()">
+  @if (editando()) {
+    <form [formGroup]="formularioEdicion" (ngSubmit)="guardar()">
+      <div class="campo-formulario">
+        <label for="nombreCompleto">Nombre completo *</label>
+        <input id="nombreCompleto" type="text" class="control-formulario" formControlName="nombreCompleto" />
+      </div>
+      <div class="campo-formulario">
+        <label for="email">Correo electrónico</label>
+        <input id="email" type="email" class="control-formulario" formControlName="email" />
+      </div>
+      <div class="campo-formulario">
+        <label for="idRol">Rol *</label>
+        <select id="idRol" class="control-formulario" formControlName="idRol">
+          @for (rol of roles(); track rol.idRol) {
+            <option [ngValue]="rol.idRol">{{ rol.nombre }}</option>
+          }
+        </select>
+      </div>
+      <div class="campo-formulario campo-casilla">
+        <label>
+          <input type="checkbox" formControlName="activo" />
+          Cuenta activa
+        </label>
+      </div>
+    </form>
+  } @else {
+    <form [formGroup]="formularioCreacion" (ngSubmit)="guardar()">
+      <div class="cuadricula-formulario">
+        <div class="campo-formulario">
+          <label for="nombreUsuario">Usuario *</label>
+          <input id="nombreUsuario" type="text" class="control-formulario" formControlName="nombreUsuario" />
+        </div>
+        <div class="campo-formulario">
+          <label for="password">Contraseña *</label>
+          <input id="password" type="password" class="control-formulario" formControlName="password" />
+        </div>
+      </div>
+      <div class="campo-formulario">
+        <label for="nombreCompletoNuevo">Nombre completo *</label>
+        <input id="nombreCompletoNuevo" type="text" class="control-formulario" formControlName="nombreCompleto" />
+      </div>
+      <div class="cuadricula-formulario">
+        <div class="campo-formulario">
+          <label for="emailNuevo">Correo electrónico</label>
+          <input id="emailNuevo" type="email" class="control-formulario" formControlName="email" />
+        </div>
+        <div class="campo-formulario">
+          <label for="idRolNuevo">Rol *</label>
+          <select id="idRolNuevo" class="control-formulario" formControlName="idRol">
+            <option [ngValue]="null" disabled>Selecciona un rol</option>
+            @for (rol of roles(); track rol.idRol) {
+              <option [ngValue]="rol.idRol">{{ rol.nombre }}</option>
+            }
+          </select>
+        </div>
+      </div>
+    </form>
+  }
+
+  <div modal-pie>
+    <app-boton variante="fantasma" (click)="cerrarModal()">Cancelar</app-boton>
+    <app-boton [cargando]="guardando()" (click)="guardar()">Guardar</app-boton>
+  </div>
+</app-modal>

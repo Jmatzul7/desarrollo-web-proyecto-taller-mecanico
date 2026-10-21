@@ -1,0 +1,58 @@
+.no-encontrado-page {
+  min-height: 100vh;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 32px;
+  background:
+    radial-gradient(circle at 15% 15%, rgba(109, 40, 217, 0.25), transparent 45%),
+    radial-gradient(circle at 85% 85%, rgba(236, 72, 153, 0.18), transparent 45%),
+    var(--color-fondo-pagina);
+}
+
+.no-encontrado-card {
+  text-align: center;
+  max-width: 420px;
+}
+
+.no-encontrado-code {
+  font-size: 88px;
+  font-weight: 800;
+  line-height: 1;
+  background: var(--gradiente-primario);
+  -webkit-background-clip: text;
+  background-clip: text;
+  color: transparent;
+  margin-bottom: 8px;
+}
+
+.no-encontrado-card h1 {
+  font-size: 22px;
+  color: var(--color-texto);
+  margin-bottom: 10px;
+}
+
+.no-encontrado-card p {
+  color: var(--color-texto-atenuado);
+  font-size: 14px;
+  line-height: 1.6;
+  margin-bottom: 28px;
+}
+
+.volver-inicio {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 11px 26px;
+  border-radius: var(--radio-pill);
+  background: var(--gradiente-primario);
+  color: white;
+  font-weight: 600;
+  font-size: 14px;
+  transition: transform 0.15s, box-shadow 0.15s;
+}
+.volver-inicio:hover {
+  transform: translateY(-1px);
+  box-shadow: 0 8px 20px -6px rgba(139, 92, 246, 0.55);
+  text-decoration: none;
+}

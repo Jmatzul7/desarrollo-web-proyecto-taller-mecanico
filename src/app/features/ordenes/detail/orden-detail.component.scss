@@ -1,0 +1,171 @@
+.enlace-volver {
+  display: inline-block;
+  font-size: 13px;
+  color: var(--color-texto-atenuado);
+  margin-bottom: 10px;
+}
+
+.acciones-encabezado {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  flex-wrap: wrap;
+}
+
+.estado-selector {
+  width: auto;
+  min-width: 180px;
+}
+
+.tarjeta-informacion {
+  margin-bottom: 28px;
+}
+
+.cuadricula-informacion {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 18px;
+}
+
+.informacion-ancha {
+  grid-column: 1 / -1;
+}
+
+.etiqueta-informacion {
+  display: block;
+  font-size: 12px;
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+  color: var(--color-texto-tenue);
+  margin-bottom: 4px;
+}
+
+.valor-informacion {
+  display: block;
+  font-size: 14px;
+  color: var(--color-texto);
+}
+
+.encabezado-seccion {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 14px;
+
+  h2 {
+    font-size: 17px;
+  }
+}
+
+.diagnostico-card {
+  margin-bottom: 18px;
+}
+
+.diagnostico-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+  margin-bottom: 10px;
+
+  h3 {
+    font-size: 15px;
+  }
+}
+
+.diagnostico-meta {
+  font-size: 12px;
+  color: var(--color-texto-tenue);
+  margin-top: 2px;
+}
+
+.diagnostico-falla {
+  font-size: 14px;
+  color: var(--color-texto-atenuado);
+  margin-bottom: 16px;
+  line-height: 1.5;
+}
+
+.estado-vacio.small {
+  padding: 18px;
+  font-size: 13px;
+}
+
+.reparaciones-list {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+.reparacion-item {
+  background: var(--color-superficie-alt);
+  border: 1px solid var(--color-borde);
+  border-radius: var(--radio-md);
+  padding: 14px 16px;
+}
+
+.reparacion-main {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+  gap: 12px;
+  margin-bottom: 10px;
+
+  strong {
+    font-size: 14px;
+    color: var(--color-texto);
+  }
+}
+
+.reparacion-sub {
+  display: flex;
+  gap: 14px;
+  font-size: 12px;
+  color: var(--color-texto-tenue);
+  margin-top: 4px;
+}
+
+.reparacion-actions {
+  display: flex;
+  gap: 8px;
+  flex-wrap: wrap;
+}
+
+.repuestos-usados {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  margin-top: 12px;
+}
+
+.repuesto-etiqueta {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  background: var(--color-superficie-claro);
+  border: 1px solid var(--color-borde);
+  border-radius: var(--radio-pill);
+  padding: 6px 10px;
+  font-size: 12px;
+  color: var(--color-texto-atenuado);
+}
+
+.repuesto-precio {
+  color: var(--color-texto-tenue);
+}
+
+.chip-quitar {
+  background: none;
+  border: none;
+  color: var(--color-texto-tenue);
+  cursor: pointer;
+  font-size: 11px;
+}
+.chip-quitar:hover {
+  color: var(--color-peligro);
+}
+
+@media (max-width: 760px) {
+  .cuadricula-informacion {
+    grid-template-columns: 1fr;
+  }
+}

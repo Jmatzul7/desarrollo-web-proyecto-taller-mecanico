@@ -1,0 +1,10 @@
+<div class="no-encontrado-page">
+  <div class="no-encontrado-card">
+    <div class="no-encontrado-code">404</div>
+    <h1>Página no encontrada</h1>
+    <p>La ruta a la que intentaste acceder no existe o fue movida.</p>
+    <a [routerLink]="servicioAutenticacion.estaAutenticado() ? '/' : '/iniciar-sesion'" class="volver-inicio">
+      {{ servicioAutenticacion.estaAutenticado() ? 'Volver al panel' : 'Ir al inicio de sesión' }} →
+    </a>
+  </div>
+</div>

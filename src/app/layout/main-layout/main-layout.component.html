@@ -1,0 +1,81 @@
+<div class="layout" [class.barra-lateral-collapsed]="!barraLateralAbierta()">
+  <aside class="barra-lateral">
+    <div class="barra-lateral-marca">
+      <span class="marca-punto"></span>
+      @if (barraLateralAbierta()) {
+        <span>Taller Mecánico</span>
+      }
+    </div>
+
+    <nav class="barra-lateral-navegacion">
+      @for (elemento of itemsNavegacion; track elemento.ruta) {
+        @if (puedeVer(elemento)) {
+          <a [routerLink]="elemento.ruta" routerLinkActive="activo" [routerLinkActiveOptions]="{ exact: elemento.ruta === '/' }">
+            <span class="icono-navegacion">{{ elemento.icono }}</span>
+            @if (barraLateralAbierta()) {
+              <span class="etiqueta-navegacion">{{ elemento.etiqueta }}</span>
+            }
+          </a>
+        }
+      }
+    </nav>
+
+    <button class="btn-colapsar" (click)="alternarBarraLateral()">
+      {{ barraLateralAbierta() ? '«' : '»' }}
+    </button>
+  </aside>
+
+  <div class="disposicion-principal">
+    <header class="barra-superior">
+      <div class="barra-superior-espaciador"></div>
+
+      <div class="usuario-menu">
+        <button class="usuario-disparador" (click)="alternarMenuUsuario()">
+          <span class="usuario-avatar">{{ servicioAutenticacion.sesion()?.nombreCompleto?.charAt(0) }}</span>
+          <span class="usuario-informacion">
+            <strong>{{ servicioAutenticacion.sesion()?.nombreCompleto }}</strong>
+            <small>{{ servicioAutenticacion.sesion()?.rol }}</small>
+          </span>
+        </button>
+
+        @if (menuUsuarioAbierto()) {
+          <div class="usuario-menu-desplegable">
+            <button (click)="abrirMisPermisos()">Mis permisos</button>
+            <button (click)="cerrarSesion()">Cerrar sesión</button>
+          </div>
+        }
+      </div>
+    </header>
+
+    <main class="content">
+      <router-outlet></router-outlet>
+    </main>
+  </div>
+</div>
+
+<app-modal [abierto]="modalPermisosAbierto()" titulo="Mis permisos" (cerrado)="modalPermisosAbierto.set(false)">
+  <p class="permisos-rol">
+    Rol: <strong>{{ servicioAutenticacion.sesion()?.rol }}</strong>
+  </p>
+  <p class="permisos-ayuda">
+    Además de lo que te permite tu rol, estos son los permisos individuales que un administrador te asignó.
+    Si te agregan o te quitan alguno, aquí y en el menú se actualiza solo en unos segundos.
+  </p>
+
+  @if (misPermisos().length === 0) {
+    <div class="estado-vacio">No tienes permisos adicionales: tu acceso depende solo de tu rol.</div>
+  } @else {
+    <ul class="permisos-lista">
+      @for (permiso of misPermisos(); track permiso.nombre) {
+        <li>
+          <span>{{ permiso.descripcion }}</span>
+          <code>{{ permiso.nombre }}</code>
+        </li>
+      }
+    </ul>
+  }
+
+  <div modal-pie>
+    <app-boton variante="fantasma" (click)="modalPermisosAbierto.set(false)">Cerrar</app-boton>
+  </div>
+</app-modal>
