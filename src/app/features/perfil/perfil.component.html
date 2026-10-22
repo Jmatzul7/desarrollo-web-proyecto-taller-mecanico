@@ -1,0 +1,125 @@
+@if (cargando()) {
+  <div class="estado-vacio">Cargando perfil…</div>
+} @else {
+  <section class="card perfil-cabecera">
+    <div class="perfil-avatar" aria-hidden="true">{{ iniciales() }}</div>
+    <div class="perfil-identidad">
+      <h1>{{ usuario()?.nombreCompleto }}</h1>
+      <p class="perfil-usuario">&#64;{{ usuario()?.nombreUsuario }}</p>
+      <div class="perfil-insignias">
+        <span class="insignia insignia-primario">{{ sesion()?.rol }}</span>
+        <span class="insignia" [class.insignia-exito]="usuario()?.activo" [class.insignia-peligro]="!usuario()?.activo">
+          {{ usuario()?.activo ? 'Cuenta activa' : 'Cuenta inactiva' }}
+        </span>
+      </div>
+    </div>
+    <div class="perfil-botones">
+      <app-boton (click)="abrirEditarDatos()">Editar datos</app-boton>
+      <app-boton variante="fantasma" (click)="abrirCambiarPassword()">Cambiar contraseña</app-boton>
+    </div>
+  </section>
+
+  <div class="perfil-cuadricula">
+    <section class="card">
+      <div class="tarjeta-encabezado"><h2>Información personal</h2></div>
+      <dl class="perfil-datos">
+        <div><dt>Nombre completo</dt><dd>{{ usuario()?.nombreCompleto }}</dd></div>
+        <div><dt>Nombre de usuario</dt><dd>{{ usuario()?.nombreUsuario }}</dd></div>
+        <div><dt>Correo electrónico</dt><dd>{{ usuario()?.email || 'No registrado' }}</dd></div>
+      </dl>
+    </section>
+
+    <section class="card">
+      <div class="tarjeta-encabezado"><h2>Cuenta</h2></div>
+      <dl class="perfil-datos">
+        <div><dt>Rol</dt><dd>{{ sesion()?.rol }}</dd></div>
+        <div><dt>Permisos adicionales</dt><dd>{{ cantidadPermisos() === 0 ? 'Ninguno (solo los de tu rol)' : cantidadPermisos() }}</dd></div>
+        <div><dt>Miembro desde</dt><dd>{{ usuario()?.fechaCreacion | date: 'dd/MM/yyyy' }}</dd></div>
+        <div><dt>Contraseña</dt><dd>••••••••</dd></div>
+      </dl>
+    </section>
+  </div>
+}
+
+<app-modal [abierto]="modalDatosAbierto()" titulo="Editar datos" (cerrado)="cerrarEditarDatos()">
+  <form [formGroup]="formularioDatos" (ngSubmit)="guardarDatos()" class="perfil-formulario" novalidate>
+        <div class="campo-formulario">
+          <label for="nombreUsuario">Nombre de usuario</label>
+          <input id="nombreUsuario" class="control-formulario" formControlName="nombreUsuario" autocomplete="username"
+                 [class.invalid]="formularioDatos.controls.nombreUsuario.invalid && formularioDatos.controls.nombreUsuario.touched" />
+          @let cu = formularioDatos.controls.nombreUsuario;
+          @if (cu.pending) {
+            <span class="hint">Comprobando disponibilidad…</span>
+          } @else if (cu.hasError('usuarioEnUso')) {
+            <span class="error-campo">Ese nombre de usuario ya está en uso.</span>
+          } @else if (cu.hasError('required') && cu.touched) {
+            <span class="error-campo">El nombre de usuario es obligatorio.</span>
+          } @else if (cu.hasError('pattern')) {
+            <span class="error-campo">De 3 a 50 caracteres: letras, números, punto, guion o guion bajo.</span>
+          } @else if (nombreUsuarioDisponible) {
+            <span class="hint disponible">✓ Nombre de usuario disponible</span>
+          } @else {
+            <span class="hint">Es el que usas para iniciar sesión.</span>
+          }
+        </div>
+
+        <div class="campo-formulario">
+          <label for="nombreCompleto">Nombre completo</label>
+          <input id="nombreCompleto" class="control-formulario" formControlName="nombreCompleto"
+                 [class.invalid]="formularioDatos.controls.nombreCompleto.invalid && formularioDatos.controls.nombreCompleto.touched" />
+          @if (formularioDatos.controls.nombreCompleto.invalid && formularioDatos.controls.nombreCompleto.touched) {
+            <span class="error-campo">El nombre completo es obligatorio.</span>
+          }
+        </div>
+
+        <div class="campo-formulario">
+          <label for="email">Correo electrónico</label>
+          <input id="email" type="email" class="control-formulario" formControlName="email" autocomplete="email"
+                 [class.invalid]="formularioDatos.controls.email.invalid && formularioDatos.controls.email.touched" />
+          @if (formularioDatos.controls.email.invalid && formularioDatos.controls.email.touched) {
+            <span class="error-campo">Ingresa un correo válido.</span>
+          }
+        </div>
+      </form>
+  <div modal-pie>
+    <app-boton variante="fantasma" (click)="cerrarEditarDatos()">Cancelar</app-boton>
+    <app-boton [cargando]="guardandoDatos()" [deshabilitado]="formularioDatos.invalid || formularioDatos.pending || datosSinCambios" (click)="guardarDatos()">Guardar cambios</app-boton>
+  </div>
+</app-modal>
+
+<app-modal [abierto]="modalPasswordAbierto()" titulo="Cambiar contraseña" (cerrado)="cerrarCambiarPassword()">
+  <form [formGroup]="formularioPassword" (ngSubmit)="cambiarPassword()" class="perfil-formulario" novalidate>
+        <div class="campo-formulario">
+          <label for="passwordActual">Contraseña actual</label>
+          <input id="passwordActual" type="password" class="control-formulario" formControlName="passwordActual" autocomplete="current-password"
+                 [class.invalid]="formularioPassword.controls.passwordActual.invalid && formularioPassword.controls.passwordActual.touched" />
+          @if (formularioPassword.controls.passwordActual.invalid && formularioPassword.controls.passwordActual.touched) {
+            <span class="error-campo">Indica tu contraseña actual.</span>
+          }
+        </div>
+
+        <div class="campo-formulario">
+          <label for="passwordNueva">Nueva contraseña</label>
+          <input id="passwordNueva" type="password" class="control-formulario" formControlName="passwordNueva" autocomplete="new-password"
+                 [class.invalid]="formularioPassword.controls.passwordNueva.invalid && formularioPassword.controls.passwordNueva.touched" />
+          @if (formularioPassword.controls.passwordNueva.invalid && formularioPassword.controls.passwordNueva.touched) {
+            <span class="error-campo">Mínimo 6 caracteres.</span>
+          }
+        </div>
+
+        <div class="campo-formulario">
+          <label for="confirmar">Confirmar nueva contraseña</label>
+          <input id="confirmar" type="password" class="control-formulario" formControlName="confirmar" autocomplete="new-password"
+                 [class.invalid]="formularioPassword.hasError('noCoinciden') && formularioPassword.controls.confirmar.touched" />
+          @if (formularioPassword.hasError('noCoinciden') && formularioPassword.controls.confirmar.touched) {
+            <span class="error-campo">Las contraseñas no coinciden.</span>
+          }
+        </div>
+
+        <p class="hint">Cambiar la contraseña no modifica tu nombre de usuario.</p>
+      </form>
+  <div modal-pie>
+    <app-boton variante="fantasma" (click)="cerrarCambiarPassword()">Cancelar</app-boton>
+    <app-boton [cargando]="guardandoPassword()" [deshabilitado]="formularioPassword.invalid" (click)="cambiarPassword()">Actualizar contraseña</app-boton>
+  </div>
+</app-modal>

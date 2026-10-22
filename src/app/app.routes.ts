@@ -26,6 +26,10 @@ export const routes: Routes = [
         loadComponent: () => import('./features/dashboard/dashboard.component').then((m) => m.PanelComponente)
       },
       {
+        path: 'perfil',
+        loadComponent: () => import('./features/perfil/perfil.component').then((m) => m.PerfilComponente)
+      },
+      {
         path: 'clientes',
         canActivate: [guardiaPermiso],
         data: { ...PERMISOS.CLIENTES_VER },

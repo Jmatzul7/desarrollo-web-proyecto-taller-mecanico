@@ -10,3 +10,4 @@ export * from './repuesto.model';
 export * from './factura.model';
 export * from './api-error.model';
 export * from './permisos.model';
+export * from './perfil.model';

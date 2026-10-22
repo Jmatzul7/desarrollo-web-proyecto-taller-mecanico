@@ -1,15 +1,14 @@
 # Taller Mecánico - Frontend (Angular)
 
-Frontend en Angular 19 (componentes standalone) que consume la API REST
+Frontend en Angular que consume la API REST
 `TallerMecanicoAPI`. Implementa autenticación JWT, control de acceso por rol y
 por permisos granulares, y una interfaz con modales para todas las operaciones
-que expone la API. **Esta versión tiene el código, los nombres de archivos, los
-comentarios y los textos de la interfaz en español.**
+que expone la API. 
 
 ## Requisitos
 
-- Node.js 18.19+ / 20.11+ / 22+ (probado con Node 22.22.0)
-- La API `TallerMecanicoAPI` en ejecución (por defecto se espera en
+- Node.js 20.11+ / 22+ 
+- La API `TallerMecanicoAPI` en ejecución (
   `http://localhost:5000/api`, ver `src/environments/environment.ts`)
 
 ## Instalación y ejecución
@@ -20,7 +19,7 @@ npm start           # http://localhost:4200
 npm run build       # compilación de producción en dist/
 ```
 
-Si tu API corre en otro puerto o host, actualiza `urlApi` en
+Si cualquier cambio de puerto actualizar `urlApi` en
 `src/environments/environment.ts` (desarrollo) y `src/environments/environment.prod.ts` (producción).
 
 ## Arquitectura
@@ -61,31 +60,6 @@ src/app/
   environments/               Configuración por ambiente (urlApi)
 ```
 
-### Convenciones
-
-Los nombres de archivos y carpetas se mantienen como en la versión original; lo que
-está en español es el **contenido**: clases, métodos, señales, comentarios y textos.
-
-| Antes (inglés)                  | Ahora (español)                          |
-|---------------------------------|------------------------------------------|
-| `XComponent`, `XService`        | `XComponente`, `XServicio`               |
-| `authGuard`                     | `guardiaAutenticacion`                   |
-| `getAll / getById / create`     | `obtenerTodos / obtenerPorId / crear`    |
-| `update / delete`               | `actualizar / eliminar`                  |
-| `loading / saving`              | `cargando / guardando`                   |
-| `*appHasPermission / *appHasRole` | `*appTienePermiso / *appTieneRol`      |
-| Ruta `/login`                   | `/iniciar-sesion`                        |
-
-### Lo que NO se tradujo (contrato con el backend)
-
-Para no romper la comunicación con la API se mantienen tal cual: las URLs de los
-endpoints (`/api/ordenestrabajo`, `/api/auth/login`, ...), los nombres de los
-campos JSON (`nombreUsuario`, `idEstadoOrden`, ...), los verbos HTTP, los nombres
-de roles (`Administrador`, `Recepcionista`, `Mecanico`, `Bodeguero`), los nombres
-de permisos (`clientes.crear`, `reparaciones.autorizar`, ...), los nombres de
-claims del JWT, la clave `taller_token` de `localStorage` y los sufijos propios de
-Angular (`ngOnInit`, `loadComponent`, `Component` en decoradores, etc.).
-
 ## Autenticación y permisos
 
 - El JWT se guarda en `localStorage` y se adjunta a cada petición mediante
@@ -116,8 +90,7 @@ notificación según el código HTTP (400; 401 → cierre de sesión automático
 
 - Los endpoints de `core/services/*.service.ts` siguen el backend real
   (`/api/ordenestrabajo`, `/api/reparaciones/{id}/autorizar`,
-  `/api/permisos/usuario/{id}`, ...). Si tu backend usa rutas distintas, ajusta
-  únicamente `urlBase` en cada servicio.
+  `/api/permisos/usuario/{id}`, ...). 
 - El backend responde `200 OK` sin cuerpo al crear/actualizar/eliminar (excepto
   facturas y registro), por eso tras crear se recarga la lista.
 - El PDF de la factura se descarga con `GET /api/facturas/{id}/pdf` como `blob`.

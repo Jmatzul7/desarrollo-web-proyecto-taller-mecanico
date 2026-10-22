@@ -85,6 +85,11 @@ export class AutenticacionServicio {
     return this.tieneRol(...rolesPermitidos) || this.poseePermiso(permiso);
   }
 
+  /** Aplica un token nuevo recibido fuera del login (p. ej. tras editar el perfil). */
+  aplicarToken(token: string): void {
+    this.establecerSesion(token);
+  }
+
   private establecerSesion(token: string): void {
     localStorage.setItem(CLAVE_ALMACENAMIENTO, token);
     this.sesion.set(this.interpretarToken(token));

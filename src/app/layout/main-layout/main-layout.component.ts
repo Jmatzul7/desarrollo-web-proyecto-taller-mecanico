@@ -1,6 +1,6 @@
 import { Component, OnDestroy, OnInit, computed, inject, signal } from '@angular/core';
 import { CommonModule } from '@angular/common';
-import { RouterOutlet, RouterLink, RouterLinkActive } from '@angular/router';
+import { Router, RouterOutlet, RouterLink, RouterLinkActive } from '@angular/router';
 import { AutenticacionServicio } from '../../core/services/auth.service';
 import { VigilanciaPermisosServicio } from '../../core/services/permission-watch.service';
 import { ModalComponente } from '../../shared/components/modal/modal.component';
@@ -25,6 +25,7 @@ interface ItemNavegacion {
 export class DisposicionPrincipalComponente implements OnInit, OnDestroy {
   servicioAutenticacion = inject(AutenticacionServicio);
   private vigilancia = inject(VigilanciaPermisosServicio);
+  private enrutador = inject(Router);
   readonly modalPermisosAbierto = signal(false);
 
   /** Permisos granulares del usuario con su descripción, para el modal "Mis permisos". */
@@ -62,6 +63,11 @@ export class DisposicionPrincipalComponente implements OnInit, OnDestroy {
 
   alternarMenuUsuario(): void {
     this.menuUsuarioAbierto.update((v) => !v);
+  }
+
+  irAPerfil(): void {
+    this.menuUsuarioAbierto.set(false);
+    this.enrutador.navigate(['/perfil']);
   }
 
   abrirMisPermisos(): void {
