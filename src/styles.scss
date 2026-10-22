@@ -183,7 +183,8 @@ select.control-formulario {
   background: var(--color-superficie);
   border: 1px solid var(--color-borde);
   border-radius: var(--radio-lg);
-  overflow: hidden;
+  overflow-x: auto;
+  -webkit-overflow-scrolling: touch;
 }
 
 .tabla-datos {
@@ -336,5 +337,28 @@ select.control-formulario {
 @media (max-width: 720px) {
   .cuadricula-formulario {
     grid-template-columns: 1fr;
+  }
+
+  /* Las tablas conservan un ancho mínimo y se desplazan en horizontal dentro de su tarjeta. */
+  .tabla-datos {
+    min-width: 640px;
+  }
+
+  .tabla-datos thead th,
+  .tabla-datos tbody td {
+    padding: 12px 14px;
+    white-space: nowrap;
+  }
+
+  .pagina-encabezado h1 {
+    font-size: 20px;
+  }
+
+  .pagina-barra > * {
+    flex: 1 1 100%;
+  }
+
+  .card {
+    padding: 16px;
   }
 }

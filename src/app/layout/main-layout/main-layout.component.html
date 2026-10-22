@@ -1,8 +1,9 @@
-<div class="layout" [class.barra-lateral-collapsed]="!barraLateralAbierta()">
+<div class="layout" [class.barra-lateral-collapsed]="!etiquetasVisibles()" [class.menu-movil-abierto]="menuMovilAbierto()">
+  <div class="menu-movil-fondo" (click)="menuMovilAbierto.set(false)"></div>
   <aside class="barra-lateral">
     <div class="barra-lateral-marca">
       <span class="marca-punto"></span>
-      @if (barraLateralAbierta()) {
+      @if (etiquetasVisibles()) {
         <span>Taller Mecánico</span>
       }
     </div>
@@ -10,9 +11,9 @@
     <nav class="barra-lateral-navegacion">
       @for (elemento of itemsNavegacion; track elemento.ruta) {
         @if (puedeVer(elemento)) {
-          <a [routerLink]="elemento.ruta" routerLinkActive="activo" [routerLinkActiveOptions]="{ exact: elemento.ruta === '/' }">
+          <a [routerLink]="elemento.ruta" (click)="menuMovilAbierto.set(false)" routerLinkActive="activo" [routerLinkActiveOptions]="{ exact: elemento.ruta === '/' }">
             <span class="icono-navegacion">{{ elemento.icono }}</span>
-            @if (barraLateralAbierta()) {
+            @if (etiquetasVisibles()) {
               <span class="etiqueta-navegacion">{{ elemento.etiqueta }}</span>
             }
           </a>
@@ -27,6 +28,7 @@
 
   <div class="disposicion-principal">
     <header class="barra-superior">
+      <button class="btn-hamburguesa" (click)="menuMovilAbierto.set(true)" aria-label="Abrir menú">☰</button>
       <div class="barra-superior-espaciador"></div>
 
       <div class="usuario-menu">

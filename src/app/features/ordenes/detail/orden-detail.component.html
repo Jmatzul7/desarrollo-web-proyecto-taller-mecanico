@@ -19,9 +19,9 @@
         class="control-formulario estado-selector"
         [ngModel]="orden()!.idEstadoOrden"
         (ngModelChange)="cambiarEstadoOrden($event)"
-        [disabled]="esOrdenFacturada()"
+        [disabled]="esOrdenCerrada()"
       >
-        @for (opcion of estadoOrdenOpciones; track opcion.id) {
+        @for (opcion of estadoOrdenOpciones(); track opcion.id) {
             <option [ngValue]="opcion.id">{{ opcion.nombre }}</option>
         }
       </select>
@@ -106,7 +106,7 @@
                   <strong>#{{ reparacion.orden }} — {{ reparacion.descripcion }}</strong>
                   <div class="reparacion-sub">
                     @if (reparacion.costoManoObra) {
-                      <span>Mano de obra: GTQ {{ reparacion.costoManoObra | number: '1.2-2' }}</span>
+                      <span>Mano de obra: &#36;{{ reparacion.costoManoObra | number: '1.2-2' }}</span>
                     }
                     @if (reparacion.idReparacionPrevia) {
                       <span>Depende de #{{ reparacion.idReparacionPrevia }}</span>
@@ -163,7 +163,7 @@
                   @for (ru of item.repuestos; track ru.idReparacionRepuesto) {
                     <div class="repuesto-etiqueta">
                       <span>{{ ru.repuesto?.nombre || ('Repuesto #' + ru.idRepuesto) }} × {{ ru.cantidad }}</span>
-                      <span class="repuesto-precio">GTQ {{ (ru.cantidad * ru.precioUnitario) | number: '1.2-2' }}</span>
+                      <span class="repuesto-precio">&#36;{{ (ru.cantidad * ru.precioUnitario) | number: '1.2-2' }}</span>
                       <button
                         class="chip-quitar"
                         *appTienePermiso="['reparaciones.quitar_repuesto', ['Administrador', 'Bodeguero']]"
@@ -240,7 +240,7 @@
         <option [ngValue]="null" disabled>Selecciona un repuesto</option>
         @for (repuesto of repuestos(); track repuesto.idRepuesto) {
           <option [ngValue]="repuesto.idRepuesto">
-            {{ repuesto.nombre }} (stock: {{ repuesto.existencia }}) — GTQ {{ repuesto.precioUnitario }}
+            {{ repuesto.nombre }} (stock: {{ repuesto.existencia }}) — &#36;{{ repuesto.precioUnitario }}
           </option>
         }
       </select>

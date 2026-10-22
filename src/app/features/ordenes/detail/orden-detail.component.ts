@@ -1,4 +1,4 @@
-import { Component, inject, signal, OnInit } from '@angular/core';
+import { Component, computed, inject, signal, OnInit } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { ReactiveFormsModule, FormsModule, FormBuilder, Validators } from '@angular/forms';
 import { ActivatedRoute, Router, RouterLink } from '@angular/router';
@@ -106,10 +106,21 @@ export class OrdenDetalleComponente implements OnInit {
   readonly idDiagnosticoActivo = signal<number | null>(null);
   readonly idReparacionActiva = signal<number | null>(null);
 
-  readonly estadoOrdenOpciones = Object.entries(ETIQUETAS_ESTADO_ORDEN).map(([id, nombre]) => ({
-    id: Number(id),
-    nombre
-  }));
+  /**
+   * Solo se ofrecen los cambios que el backend acepta: el estado actual, el siguiente paso
+   * (Recibido → En Diagnóstico → En Reparación → Finalizada) y Cancelada. "Facturada" no se
+   * elige: la asigna el sistema al generar la factura. La orden también avanza sola cuando
+   * cambian sus reparaciones.
+   */
+  readonly estadoOrdenOpciones = computed(() => {
+    const actual = this.orden()?.idEstadoOrden ?? 1;
+    const ids = new Set<number>([actual]);
+    if (actual < 4) ids.add(actual + 1);
+    if (actual < 5) ids.add(6);
+    return [...ids]
+      .sort((a, b) => a - b)
+      .map((id) => ({ id, nombre: ETIQUETAS_ESTADO_ORDEN[id] }));
+  });
 
   formularioDiagnostico = this.fb.group({
     descripcionFalla: ['', [Validators.required]],
@@ -408,6 +419,12 @@ export class OrdenDetalleComponente implements OnInit {
   if (!idEstado) return false;
   return ETIQUETAS_ESTADO_ORDEN[idEstado] === 'Facturada';
 }
+
+  /** Facturada o Cancelada: ya no se puede cambiar el estado ni el trabajo. */
+  esOrdenCerrada(): boolean {
+    const idEstado = this.orden()?.idEstadoOrden;
+    return idEstado === 5 || idEstado === 6;
+  }
 }
 
 

@@ -79,6 +79,49 @@ src/app/
 - Las rutas administrativas (`/usuarios`, `/permisos`) usan `guardiaPermiso` con
   `data: { roles: ['Administrador'] }`.
 
+### Permisos por defecto de cada rol
+
+Esto es lo que cada rol puede hacer **sin** tener ningún permiso individual asignado
+(sale de `[RequierePermiso("permiso", Roles = "...")]` en cada controlador). Además, a
+cualquier usuario se le puede dar un permiso suelto desde la pantalla de Permisos.
+
+| Permiso | Administrador | Recepcionista | Mecánico | Bodeguero |
+|---|:-:|:-:|:-:|:-:|
+| `clientes.ver` | ✅ | ✅ | | |
+| `clientes.crear` | ✅ | ✅ | | |
+| `clientes.editar` | ✅ | ✅ | | |
+| `clientes.eliminar` | ✅ | | | |
+| `vehiculos.ver` | ✅ | ✅ | | |
+| `vehiculos.crear` | ✅ | ✅ | | |
+| `vehiculos.editar` | ✅ | ✅ | | |
+| `vehiculos.eliminar` | ✅ | | | |
+| `ordenes.crear` | ✅ | ✅ | | |
+| `ordenes.cambiar_estado` | ✅ | ✅ | ✅ | |
+| `ordenes.eliminar` | ✅ | | | |
+| `diagnosticos.crear` | ✅ | | ✅ | |
+| `diagnosticos.eliminar` | ✅ | | | |
+| `reparaciones.crear` | ✅ | | ✅ | |
+| `reparaciones.autorizar` | ✅ | | | |
+| `reparaciones.cambiar_estado` | ✅ | | ✅ | |
+| `reparaciones.eliminar` | ✅ | | | |
+| `reparaciones.asignar_repuesto` | ✅ | | | ✅ |
+| `reparaciones.quitar_repuesto` | ✅ | | | ✅ |
+| `repuestos.ver` | ✅ | | ✅ | ✅ |
+| `repuestos.crear` | ✅ | | | ✅ |
+| `repuestos.editar` | ✅ | | | ✅ |
+| `repuestos.entrada_stock` | ✅ | | | ✅ |
+| `repuestos.eliminar` | ✅ | | | |
+| `facturas.ver` | ✅ | ✅ | | |
+| `facturas.generar` | ✅ | ✅ | | |
+| `facturas.descargar_pdf` | ✅ | ✅ | | |
+| `usuarios.ver_mecanicos` | ✅ | ✅ | ✅ | |
+
+Sin restricción de permiso (cualquier usuario autenticado): ver y editar su propio perfil,
+cambiar su contraseña, consultar los catálogos y ver órdenes, diagnósticos y reparaciones.
+La gestión de usuarios y de permisos es exclusiva del **Administrador**.
+
+
+
 ## Manejo de errores
 
 `interceptorErrores` lee el cuerpo `{ mensaje }` que devuelve la API y muestra una

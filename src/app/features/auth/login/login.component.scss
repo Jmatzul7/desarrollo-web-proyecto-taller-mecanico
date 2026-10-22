@@ -176,9 +176,12 @@
   overflow: hidden;
 }
 
-.onda-grafico {
-  position: absolute;
-  inset: 0;
+.onda-grafico img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover; 
+  object-position: center;
+  display: block;
 }
 
 .onda-svg {

@@ -38,6 +38,19 @@ export class DisposicionPrincipalComponente implements OnInit, OnDestroy {
   readonly barraLateralAbierta = signal(true);
   readonly menuUsuarioAbierto = signal(false);
 
+  /** En pantallas pequeñas el menú lateral es un panel que se abre con el botón ☰. */
+  readonly menuMovilAbierto = signal(false);
+  readonly esMovil = signal(false);
+  /** Texto del menú visible: siempre en móvil (panel completo), según el colapso en escritorio. */
+  readonly etiquetasVisibles = computed(() => this.esMovil() || this.barraLateralAbierta());
+  private consultaMovil?: MediaQueryList;
+  private alCambiarTamano = (e: MediaQueryListEvent) => this.ajustarMovil(e.matches);
+
+  private ajustarMovil(movil: boolean): void {
+    this.esMovil.set(movil);
+    if (!movil) this.menuMovilAbierto.set(false);
+  }
+
   readonly itemsNavegacion: ItemNavegacion[] = [
     { etiqueta: 'Panel', icono: '◧', ruta: '/' },
     { etiqueta: 'Clientes', icono: '◉', ruta: '/clientes', ...PERMISOS.CLIENTES_VER },
@@ -50,10 +63,14 @@ export class DisposicionPrincipalComponente implements OnInit, OnDestroy {
   ];
 
   ngOnInit(): void {
+    this.consultaMovil = window.matchMedia('(max-width: 860px)');
+    this.ajustarMovil(this.consultaMovil.matches);
+    this.consultaMovil.addEventListener('change', this.alCambiarTamano);
     this.vigilancia.iniciar();
   }
 
   ngOnDestroy(): void {
+    this.consultaMovil?.removeEventListener('change', this.alCambiarTamano);
     this.vigilancia.detener();
   }
 
